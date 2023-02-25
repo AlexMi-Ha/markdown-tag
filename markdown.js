@@ -32,7 +32,7 @@ function markdownParse(mdString) {
     let lineArr = mdString.split('\n');
     let parsed = "";
     for(const line of lineArr) {
-        parsed += line.trim()+ "\n";
+        parsed += line+ "\n";
     }
     for(const rule of rules) {
         parsed = parsed.replace(rule[0], rule[1]);
@@ -58,9 +58,43 @@ const rules = [
 
     // TODO: Subpoints
     //ul
-    [/^\s*\n[\*-]/gm, '<ul>\n*'],
-    [/^([\*-].+)\s*\n([^\*-])/gm, '$1\n</ul>\n\n$2'],
-    [/^[\*-](.+)/gm, '<li>$1</li>'],
+    /*[/^\s*\n[\*-]/gm, '<ul>\n*'],
+    [/^([\*-].+)\s*\n(\s*[^\*-])/gm, '$1\n</ul>\n\n$2'],
+    [/^\s*[\*-](.+)/gm, '<li>$1</li>'],*/
+    
+    [/^\s*\n(\s*[-*+].+\s*\n)(?:.+\n)*/gm, function(listMd) {
+        const lines = listMd.split('\n');
+        let html = '';
+        let startTab = lines[1].split(/[^\t]/)[0].length;
+        let ulOpened = 0;
+        let liOpened = 0;
+        for(let i = 1; i < lines.length; ++i) {
+            if(lines[i].trim().match(/[*+-].*/) != null) {
+                if(lines[i-1].length - lines[i-1].trimStart().length < lines[i].length - lines[i].trimStart().length) {
+                    ulOpened++;
+                    html += '<ul>'
+                } else if(lines[i-1].length - lines[i-1].trimStart().length > lines[i].length - lines[i].trimStart().length) {
+                    const tabBefore = lines[i-1].split(/[^\t]/)[0].length;
+                    const tabHere = lines[i].split(/[^\t]/)[0].length;
+                    const diff = Math.max(tabBefore - tabHere, 1);
+                    liOpened -= diff
+                    html += '</li>'.repeat(diff);
+                    ulOpened--;
+                    html += '</ul>';
+                } else {
+                    liOpened--;
+                    html += '</li>'
+                }
+                liOpened++;
+                html += '<li>' + lines[i].trim().substring(1);
+            }
+        }
+        html += '</li>'.repeat(Math.max(liOpened,0));
+        html += '</ul>'.repeat(Math.max(ulOpened, 0));
+        console.log('Markdown', listMd);
+        console.log("Html",html);
+        return html;
+    }],
 
     //ol
     [/^\s*\n\d\./gm, '<ol>\n1.'],
