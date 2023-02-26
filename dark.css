@@ -1,5 +1,5 @@
 markdown {
-    padding: 2em;
+    padding: 32px;
     display:block;
     color-scheme: dark;
     -ms-text-size-adjust: 100%;
@@ -1059,3 +1059,21 @@ markdown {
     fill: #508758;
     border-color: #508758;
   }
+
+  markdown .header-text {
+    position: relative;
+    padding-left: 25px;
+    margin-left: -25px;
+  }
+
+  markdown .header-text:hover .header-anchor {
+    display: block;
+  }
+
+  markdown .header-anchor {
+    position: absolute;
+    fill: #BDB9B3;
+    transform: translateX(-120%);
+    display: none;
+  }
+
